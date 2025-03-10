@@ -14,12 +14,12 @@ class productoController extends Controller
     {
         $productos = producto::where('user_id', Auth::user()->id)->get();
         foreach ($productos as $producto) {
-            $producto->imagen_url = asset('storage/productos/'.$producto->imagen);
+            $producto->imagen_url = asset('storage/productos/' . $producto->imagen);
         }
-        
+
         return response()->json($productos);
-    }   
-    
+    }
+
 
     public function store(Request $request)
     {
@@ -37,7 +37,6 @@ class productoController extends Controller
         $imagen = null;
         if ($request->hasFile('imagen')) {
             $imagen = $imagenServicio->subirImagen($request->file('imagen'), 'productos/');
-           
         }
 
         $producto = Producto::create([
@@ -55,13 +54,12 @@ class productoController extends Controller
         ]);
 
         return response()->json($producto);
-
     }
-    
+
     public function show($id)
     {
         $producto = producto::where('user_id', Auth::user()->id)->find($id);
-        $producto->imagen_url = asset('storage/productos/'.$producto->imagen);
+        $producto->imagen_url = asset('storage/productos/' . $producto->imagen);
         return response()->json($producto);
     }
 
@@ -77,22 +75,23 @@ class productoController extends Controller
             'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
-        $producto = producto::where('user_id', Auth::user()->id)->find($id);
+        $producto = Producto::where('user_id', Auth::user()->id)->find($id);
 
+        if (!$producto) {
+            return response()->json(['error' => 'Producto no encontrado'], 404);
+        }
 
         $imagenServicio = new ImagenServicio();
-        $imagen = null;
+        $imagen = $producto->imagen;
 
         if ($request->hasFile('imagen')) {
-            if($producto->imagen != null){
+            if ($producto->imagen) {
                 $imagenServicio->eliminarImagen($producto->imagen, 'productos/');
             }
-            
             $imagen = $imagenServicio->subirImagen($request->file('imagen'), 'productos/');
-            
         }
-       
-        $producto = Producto::create([
+
+        $producto->update([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
             'precio_unitario' => $request->precio_unitario,
@@ -103,11 +102,11 @@ class productoController extends Controller
             'fecha_vencimiento' => $request->fecha_vencimiento,
             'estado' => $request->estado,
             'imagen' => $imagen,
-            'user_id' => Auth::user()->id
         ]);
 
         return response()->json($producto);
     }
+
 
     public function destroy($id)
     {
@@ -115,11 +114,4 @@ class productoController extends Controller
         $producto->delete();
         return response()->json(null, 204);
     }
-
-
-
-
-    
-    
-
 }
