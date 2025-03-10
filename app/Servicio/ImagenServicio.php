@@ -1,13 +1,14 @@
 <?php
 
 namespace App\Servicio;
+use Illuminate\Support\Facades\Storage;
 
 class ImagenServicio
 {
     public function subirImagen($imagen, $path)
     {
-        $nombreImagen = time() . '.' . $imagen->getClientOriginalExtension();
-        $imagen->move(public_path($path), $nombreImagen);
+        $nombreImagen = str_replace(' ', '_', $imagen->getClientOriginalName());
+        $imagen->storeAs($path, $nombreImagen, 'public');
         return $nombreImagen;  
     }
 
@@ -21,7 +22,6 @@ class ImagenServicio
         }   
     }
 }
-
 
 
 
